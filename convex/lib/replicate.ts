@@ -72,34 +72,6 @@ export const processWebhook = internalAction({
   },
 });
 
-export const enqueueBackgroundMusicGeneration = internalAction({
-  args: {},
-  handler: async (ctx, args) => {
-    if (!replicateAvailable()) {
-      return;
-    }
-    const worldState = await ctx.runQuery(api.players.getWorld);
-    const frozen: boolean | undefined = worldState?.world.frozen;
-    if (frozen) {
-      console.log('World is frozen. not generating');
-      return;
-    }
-
-    // TODO MusicGen-Large on Replicate only allows 30 seconds. Use MusicGen-Small for longer?
-    const metadata = await generateMusic('16-bit RPG adventure game with wholesome vibe', 30);
-
-    if (!metadata) {
-      return;
-    }
-    const id = metadata.id;
-    const webhookId: Id<'replicate_webhooks'> = await ctx.runMutation(
-      internal.lib.replicate.createEntry,
-      { externalId: id, handler: 'BackgroundMusicGen', input: metadata },
-    );
-    return webhookId;
-  },
-});
-
 export const createEntry = internalMutation({
   args: {
     externalId: v.string(),
